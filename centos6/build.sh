@@ -1,3 +1,5 @@
+#!/bin/sh
+
 set -e
 export WORKSPACE=/opt/build/
 yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel
@@ -149,19 +151,20 @@ tar -czvf /usr/local/${GPDB_PACKAGE_NAME}.tar.gz -C /usr/local ${GPDB_VERSION_NA
 
 #Build RPM
 cd ${WORKSPACE}
-cp /opt/gpdb.spec ./SPECS/gpdb.spec
+cp /${WORKSPACE}/gpdb.spec ./SPECS/gpdb.spec
 cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ./SOURCES/
 rpmbuild --define "gpdb_ver ${BUILD_DATE}" --define "gpdb_rel ${BUILD_NUMBER}" --define "_topdir "`pwd` -ba SPECS/gpdb.spec
 
-cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz /opt/output/${GPDB_PACKAGE_NAME}.tar.gz
+mkdir ${WORKSPACE}/output/
+cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ${WORKSPACE}/output/${GPDB_PACKAGE_NAME}.tar.gz
 
-for rpms in `ls -1 ${WORKSPACE}/RPMS/x86_64/`
-do
-  cp ${WORKSPACE}/RPMS/x86_64/${rpms} /opt/output/${rpms}
-done
+#for rpms in `ls -1 ${WORKSPACE}/RPMS/x86_64/`
+#do
+#  cp ${WORKSPACE}/RPMS/x86_64/${rpms} /opt/output/${rpms}
+#done
 
-for srpms in `ls -1 ${WORKSPACE}/SRPMS/`
-do
-  cp ${WORKSPACE}/SRPMS/${srpms} /opt/output/${srpms}
-done
+#for srpms in `ls -1 ${WORKSPACE}/SRPMS/`
+#do
+#  cp ${WORKSPACE}/SRPMS/${srpms} /opt/output/${srpms}
+#done
 
