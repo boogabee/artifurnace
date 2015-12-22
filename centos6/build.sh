@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-<<<<<<< HEAD
 
 LAUNCH_DIR=`pwd`
 export WORKSPACE=/opt/gpdbbuild/
@@ -15,18 +14,6 @@ git clone --depth=1 https://github.com/greenplum-db/gpdb.git ${WORKSPACE}
 
 re="^(.*?) (.*?) (.*?)$"
 [[ `${WORKSPACE}/getversion` =~ $re ]] && GP_VERSION="${BASH_REMATCH[1]}" && GP_BUILDNUMBER="${BASH_REMATCH[3]}" 
-=======
-
-LAUNCH_DIR=`pwd`
-export WORKSPACE=/opt/gpdbbuild/
-yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel
-#yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex apr-devel apr-util-devel openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel
-
-mkdir -p ${WORKSPACE}
-cd ${WORSPACE}
-
-git clone --depth=1 https://github.com/greenplum-db/gpdb.git ${WORKSPACE}
->>>>>>> 445efeea209db82206c59439d6cb8c62e1bdbe98
 
 export APR=apr-1.5.2
 export APR_UTIL=apr-util-1.5.4
@@ -173,19 +160,10 @@ cp ${LAUNCH_DIR}/gpdb.spec ${WORKSPACE}/SPECS/gpdb.spec
 cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ./SOURCES/
 rpmbuild --define "gpdb_ver ${BUILD_VERSION}" --define "gpdb_rel ${BUILD_NUMBER}" --define "_topdir "`pwd` -ba SPECS/gpdb.spec
 
-<<<<<<< HEAD
 mkdir -p ${LAUNCH_DIR}/output/
-=======
-mkdir ${LAUNCH_DIR}/output/
->>>>>>> 445efeea209db82206c59439d6cb8c62e1bdbe98
 cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ${LAUNCH_DIR}/output/${GPDB_PACKAGE_NAME}.tar.gz
 
 for rpms in `ls -1 ${WORKSPACE}/RPMS/x86_64/`
 do
   cp ${WORKSPACE}/RPMS/x86_64/${rpms} ${LAUNCH_DIR}/output/${rpms}
 done
-<<<<<<< HEAD
-=======
-
->>>>>>> 445efeea209db82206c59439d6cb8c62e1bdbe98
-
