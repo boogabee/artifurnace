@@ -17,8 +17,10 @@ Create a new Freestyle project and add the artifurnce git repo.
 
 The Build step should have a single Execute shell step with the following two commands:
 
+```
 cd ${WORKSPACE}/centos6/
 ./run_build_container.sh
+```
 
 The build will then execute a Docker container to build and package the GPDB binaries. 
 
