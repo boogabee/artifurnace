@@ -1,14 +1,19 @@
 #!/bin/sh
 
 set -e
-export WORKSPACE=/opt/build/
-yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel
-#yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex apr-devel apr-util-devel openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel
 
-mkdir /opt/build/
-cd /opt/build/
+LAUNCH_DIR=`pwd`
+export WORKSPACE=/opt/gpdbbuild/
+yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2-devel libxslt-devel
 
-git clone --depth=1 https://github.com/greenplum-db/gpdb.git /opt/build/
+mkdir -p ${WORKSPACE}
+cd ${WORSPACE}
+
+git clone --depth=1 https://github.com/greenplum-db/gpdb.git ${WORKSPACE}
+
+
+re="^(.*?) (.*?) (.*?)$"
+[[ `${WORKSPACE}/getversion` =~ $re ]] && GP_VERSION="${BASH_REMATCH[1]}" && GP_BUILDNUMBER="${BASH_REMATCH[3]}" 
 
 export APR=apr-1.5.2
 export APR_UTIL=apr-util-1.5.4
@@ -22,16 +27,16 @@ export READLINE_TAR=${READLINE}.tar.gz
 export NCURSES_TAR=${NCURSES}.tar.gz
 
 export CC=gcc
-export BUILD_DATE=`date +%Y%m%d`
-export BUILD_NUMBER=100
-export GPDB_PACKAGE_NAME=greenplum-db-${BUILD_DATE}-${BUILD_NUMBER}-RHEL6-x86_64
-export GPDB_VERSION_NAME=greenplum-db-${BUILD_DATE}-${BUILD_NUMBER}
+export BUILD_VERSION=${GP_VERSION}
+export BUILD_NUMBER=${GP_BUILDNUMBER}`date +%Y%m%d%H%M%S`
+export GPDB_PACKAGE_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}-RHEL6-x86_64
+export GPDB_VERSION_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}
 export GPDB_VERSION_PATH=/usr/local/${GPDB_VERSION_NAME}
-export GPDB_PATH=/usr/local/greenplum-db
+export GPDB_PATH=/usr/local/apache-greenplum-db
 export PATH=${GPDB_VERSION_PATH}/bin:$PATH
-export LD_LIBRARY_PATH=${GPDB_VERSION_PATH}/lib:${WORKSPACE}/tools/lib:${WORKSPACE}/lib:$LD_LIBRARY_PATH
-export C_INCLUDE_PATH=${GPDB_VERSION_PATH}/include:${WORKSPACE}/tools/include:${WORKSPACE}/include:$C_INCLUDE_PATH
-export CPPFLAGS="-I ${GPDB_VERSION_PATH}/include:${WORKSPACE}/tools/include:${WORKSPACE}/include"
+export LD_LIBRARY_PATH=${GPDB_VERSION_PATH}/lib:${WORKSPACE}/lib:$LD_LIBRARY_PATH
+export C_INCLUDE_PATH=${GPDB_VERSION_PATH}/include:${WORKSPACE}/include:$C_INCLUDE_PATH
+export CPPFLAGS="-I ${GPDB_VERSION_PATH}/include:${WORKSPACE}/include"
 
 
 # Move to the build directory
@@ -44,7 +49,7 @@ rm -f ${GPDB_PATH}
 ln -s ${GPDB_VERSION_PATH} ${GPDB_PATH}
 
 # Build additional directories we may need
-for dir in BUILD RPMS SOURCES SPECS SRPMS tools
+for dir in BUILD RPMS SOURCES SPECS SRPMS
 do
  [[ -d $dir ]] && rm -Rf $dir
   mkdir $dir
@@ -103,7 +108,7 @@ export PATH=$PYTHONHOME/bin:$PATH
 pip install psi
 pip install lockfile
 pip install paramiko
-pip install setuptools
+pip install tools
 pip install epydoc
 
 echo "${GPDB_VERSION_PATH}/lib/" >> /etc/ld.so.conf.d/gpdb.conf
@@ -151,20 +156,15 @@ tar -czvf /usr/local/${GPDB_PACKAGE_NAME}.tar.gz -C /usr/local ${GPDB_VERSION_NA
 
 #Build RPM
 cd ${WORKSPACE}
-cp /${WORKSPACE}/gpdb.spec ./SPECS/gpdb.spec
+cp ${LAUNCH_DIR}/gpdb.spec ${WORKSPACE}/SPECS/gpdb.spec
 cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ./SOURCES/
-rpmbuild --define "gpdb_ver ${BUILD_DATE}" --define "gpdb_rel ${BUILD_NUMBER}" --define "_topdir "`pwd` -ba SPECS/gpdb.spec
+rpmbuild --define "gpdb_ver ${BUILD_VERSION}" --define "gpdb_rel ${BUILD_NUMBER}" --define "_topdir "`pwd` -ba SPECS/gpdb.spec
 
-mkdir ${WORKSPACE}/output/
-cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ${WORKSPACE}/output/${GPDB_PACKAGE_NAME}.tar.gz
+mkdir -p ${LAUNCH_DIR}/output/
+cp /usr/local/${GPDB_PACKAGE_NAME}.tar.gz ${LAUNCH_DIR}/output/${GPDB_PACKAGE_NAME}.tar.gz
 
-#for rpms in `ls -1 ${WORKSPACE}/RPMS/x86_64/`
-#do
-#  cp ${WORKSPACE}/RPMS/x86_64/${rpms} /opt/output/${rpms}
-#done
-
-#for srpms in `ls -1 ${WORKSPACE}/SRPMS/`
-#do
-#  cp ${WORKSPACE}/SRPMS/${srpms} /opt/output/${srpms}
-#done
+for rpms in `ls -1 ${WORKSPACE}/RPMS/x86_64/`
+do
+  cp ${WORKSPACE}/RPMS/x86_64/${rpms} ${LAUNCH_DIR}/output/${rpms}
+done
 

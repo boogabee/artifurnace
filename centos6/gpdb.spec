@@ -2,8 +2,8 @@
 # RPM spec file for GPDB
 #
 
-%define name            greenplum-db
-%define gpdbname        greenplum-db
+%define name            apache-greenplum-db
+%define gpdbname        apache-greenplum-db
 %define version         %{gpdb_ver}
 %define release         %{gpdb_rel}
 %define arch            x86_64
@@ -40,7 +40,7 @@ fi
 
 if ! id gpadmin >& /dev/null; then
  %{_sbindir}/adduser gpadmin -g gpadmin -d /home/gpadmin
-  echo 'source /usr/local/greenplum-db/greenplum_path.sh' >> /home/gpadmin/.bashrc
+  echo 'source /usr/local/apache-greenplum-db/greenplum_path.sh' >> /home/gpadmin/.bashrc
 fi
 exit 0
 
