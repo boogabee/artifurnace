@@ -22,6 +22,10 @@ cd ${WORKSPACE}/centos6/
 
 The build will then execute a Docker container to build and package the GPDB binaries. As part of the build process it will drop a tarball and rpm in ${WORKSPACE}/centos6/output/
 
+###Notes###
+
+Current builds are being rolled out to http://gpdbbins.s3-website-us-east-1.amazonaws.com/ on a daily+ basis
+
 ###Contributors###
 
 Scott Kahler ( scott.kahler@gmail.com )
