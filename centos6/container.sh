@@ -1,5 +1,6 @@
 #!/bin/sh
 
-BUILD_DIR="/opt/build"  
+BUILD_DIR="/opt/build"
 
-docker run -v `pwd`:$BUILD_DIR -w $BUILD_DIR centos6 bash -c './build.sh' 
+docker run -v `pwd`:$BUILD_DIR -w $BUILD_DIR centos:6.7 bash -c "${BUILD_DIR}/build.sh"
+
