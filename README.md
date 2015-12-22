@@ -32,7 +32,9 @@ Current builds are being rolled out to http://gpdbbins.s3-website-us-east-1.amaz
 
 ###Contributors###
 
-Scott Kahler ( scott.kahler@gmail.com )
+Scott Kahler 
+  email: scott.kahler@gmail.com 
+  twitter: boogabee
 
 ###License###
 
