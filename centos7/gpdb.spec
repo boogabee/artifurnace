@@ -10,7 +10,8 @@
 %define prefix          /usr/local
 %define installdir      /usr/local/%{name}-%{version}-%{release}
 %define symlink         /usr/local/%{name}
-%define gpdbtarball     %{gpdbname}-%{version}-%{release}-CENTOS6-%{arch}.tar.gz
+%define gpdbtarball     %{gpdbname}-%{version}-%{release}-CENTOS7-%{arch}.tar.gz
+%define __os_install_post %{___build_post}
 
 Requires(pre): shadow-utils
 

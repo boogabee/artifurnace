@@ -2,9 +2,12 @@
 
 set -e
 
+yum -y clean all 
+yum -y swap fakesystemd systemd
+
 LAUNCH_DIR=`pwd`
 export WORKSPACE=/opt/gpdbbuild/
-yum -y install gcc wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2-devel libxslt-devel
+yum -y install gcc make wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2-devel libxslt-devel
 
 mkdir -p ${WORKSPACE}
 cd ${WORSPACE}
@@ -29,7 +32,7 @@ export NCURSES_TAR=${NCURSES}.tar.gz
 export CC=gcc
 export BUILD_VERSION=${GP_VERSION}
 export BUILD_NUMBER=${GP_BUILDNUMBER}`date +%Y%m%d%H%M%S`
-export GPDB_PACKAGE_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}-CENTOS6-x86_64
+export GPDB_PACKAGE_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}-CENTOS7-x86_64
 export GPDB_VERSION_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}
 export GPDB_VERSION_PATH=/usr/local/${GPDB_VERSION_NAME}
 export GPDB_PATH=/usr/local/apache-greenplum-db
