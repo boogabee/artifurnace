@@ -6,7 +6,7 @@ yum -y clean all
 yum -y swap fakesystemd systemd
 
 LAUNCH_DIR=`pwd`
-export WORKSPACE=/opt/gpdbbuild/
+WORKSPACE=/opt/gpdbbuild/
 yum -y install gcc make wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2-devel libxslt-devel
 
 mkdir -p ${WORKSPACE}
@@ -18,28 +18,28 @@ git clone --depth=1 https://github.com/skahler-pivotal/gpdb.git ${WORKSPACE}
 re="^(.*?) (.*?) (.*?)$"
 [[ `${WORKSPACE}/getversion` =~ $re ]] && GP_VERSION="${BASH_REMATCH[1]}" && GP_BUILDNUMBER="${BASH_REMATCH[3]}" 
 
-export APR=apr-1.5.2
-export APR_UTIL=apr-util-1.5.4
-export OPENSSL=openssl-1.0.1q
-export READLINE=readline-6.3
-export NCURSES=ncurses-6.0
-export APR_TAR=${APR}.tar.gz
-export APR_UTIL_TAR=${APR_UTIL}.tar.gz
-export OPENSSL_TAR=${OPENSSL}.tar.gz
-export READLINE_TAR=${READLINE}.tar.gz
-export NCURSES_TAR=${NCURSES}.tar.gz
+APR=apr-1.5.2
+APR_UTIL=apr-util-1.5.4
+OPENSSL=openssl-1.0.1q
+READLINE=readline-6.3
+NCURSES=ncurses-6.0
+APR_TAR=${APR}.tar.gz
+APR_UTIL_TAR=${APR_UTIL}.tar.gz
+OPENSSL_TAR=${OPENSSL}.tar.gz
+READLINE_TAR=${READLINE}.tar.gz
+NCURSES_TAR=${NCURSES}.tar.gz
 
-export CC=gcc
-export BUILD_VERSION=${GP_VERSION}
-export BUILD_NUMBER=${GP_BUILDNUMBER}`date +%Y%m%d%H%M%S`
-export GPDB_PACKAGE_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}-CENTOS7-x86_64
-export GPDB_VERSION_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}
-export GPDB_VERSION_PATH=/usr/local/${GPDB_VERSION_NAME}
-export GPDB_PATH=/usr/local/apache-greenplum-db
-export PATH=${GPDB_VERSION_PATH}/bin:$PATH
-export LD_LIBRARY_PATH=${GPDB_VERSION_PATH}/lib:${WORKSPACE}/lib:$LD_LIBRARY_PATH
-export C_INCLUDE_PATH=${GPDB_VERSION_PATH}/include:${WORKSPACE}/include:$C_INCLUDE_PATH
-export CPPFLAGS="-I ${GPDB_VERSION_PATH}/include:${WORKSPACE}/include"
+CC=gcc
+BUILD_VERSION=${GP_VERSION}
+BUILD_NUMBER=${GP_BUILDNUMBER}`date +%Y%m%d%H%M%S`
+GPDB_PACKAGE_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}-CENTOS7-x86_64
+GPDB_VERSION_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}
+GPDB_VERSION_PATH=/usr/local/${GPDB_VERSION_NAME}
+GPDB_PATH=/usr/local/apache-greenplum-db
+PATH=${GPDB_VERSION_PATH}/bin:$PATH
+LD_LIBRARY_PATH=${GPDB_VERSION_PATH}/lib:${WORKSPACE}/lib:$LD_LIBRARY_PATH
+C_INCLUDE_PATH=${GPDB_VERSION_PATH}/include:${WORKSPACE}/include:$C_INCLUDE_PATH
+CPPFLAGS="-I ${GPDB_VERSION_PATH}/include:${WORKSPACE}/include"
 
 
 # Move to the build directory
@@ -96,8 +96,8 @@ make
 make install
 
 #Build Readline
-cd ${WORKSPACE}/${READLINE} --with-curses
-./configure --prefix=${GPDB_VERSION_PATH}
+cd ${WORKSPACE}/${READLINE}
+./configure --prefix=${GPDB_VERSION_PATH} --with-curses
 make SHLIB_LIBS=-lncurses all shared
 make install
 
@@ -105,9 +105,9 @@ make install
 cd ${WORKSPACE}
 chmod oug+x Miniconda-latest-Linux-x86_64.sh
 ./Miniconda-latest-Linux-x86_64.sh -b -f -p ${GPDB_VERSION_PATH}/ext/conda2
-export PYTHONHOME="${GPDB_VERSION_PATH}/ext/conda2"
-export PYTHONPATH=${GPDB_VERSION_PATH}/lib/python
-export PATH=$PYTHONHOME/bin:$PATH
+PYTHONHOME="${GPDB_VERSION_PATH}/ext/conda2"
+PYTHONPATH=${GPDB_VERSION_PATH}/lib/python
+PATH=$PYTHONHOME/bin:$PATH
 pip install psi
 pip install lockfile
 pip install paramiko
