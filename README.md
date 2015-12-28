@@ -33,10 +33,16 @@ Current builds are being rolled out to http://gpdbbins.s3-website-us-east-1.amaz
 ###Contributors###
 
 Scott Kahler 
-  email: scott.kahler@gmail.com 
-  twitter: boogabee
+  - email: scott.kahler@gmail.com 
+  - twitter: boogabee
 
 ###License###
 
 MIT
+
+### How you can help ###
+
+Funds to help maintain infrastructure and bandwith
+
+Artifurnace is also powered by victrolas and board games
  
