@@ -20,7 +20,7 @@ re="^(.*?) (.*?) (.*?)$"
 
 APR=apr-1.5.2
 APR_UTIL=apr-util-1.5.4
-OPENSSL=openssl-1.0.1q
+OPENSSL=openssl-1.0.1r
 READLINE=readline-6.3
 NCURSES=ncurses-6.0
 APR_TAR=${APR}.tar.gz
