@@ -2,25 +2,78 @@
 
 set -e
 
+SHORT=mos:v
+LONG=with-miniconda,enable-orca,use-sha:,verbose
+
+PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- $*`
+if [[ $? -ne 0 ]]; then
+    # e.g. $? == 1
+    #  then getopt has complained about wrong arguments to stdout
+    exit 2
+fi
+# use eval with "$PARSED" to properly handle the quoting
+eval set -- "$PARSED"
+
+# set defaults for the build
+COMMIT_SHA=          # take the default HEAD
+USE_MINICONDA=false  # don't build with Miniconda by default
+ENABLE_ORCA=         # don't build with Orca support by default
+
+# now enjoy the options in order and nicely split until we see --
+while true; do
+    case "$1" in
+        -m|--with-miniconda)
+            USE_MINICONDA=true
+            shift
+            ;;
+        -o|--enable-orca)
+	    ENABLE_ORCA="--enable-orca"
+            shift
+            ;;
+        -s|--use-sha)
+            COMMIT_SHA="$2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Unknown argument/option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+echo "with-miniconda: $USE_MINICONDA, enable-orca: $ENABLE_ORCA, use-sha: $COMMIT_SHA"
+
 yum -y clean all 
 yum -y swap fakesystemd systemd
 
 LAUNCH_DIR=`pwd`
 WORKSPACE=/opt/gpdbbuild/
-yum -y install gcc make wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2-devel libxslt-devel python-devel readline-devel apr-devel openssl-libs openssl-devel
+yum -y install gcc make wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2-devel libxslt-devel python-devel readline-devel apr-devel openssl-libs openssl-devel zlib-devel
+
+yum search cmake
+yum -y install epel-release
+yum -y install cmake3
 
 rm -rf ${WORKSPACE}
 mkdir -p ${WORKSPACE}
-cd ${WORSPACE}
 
-git clone --depth=1 https://github.com/greenplum-db/gpdb.git ${WORKSPACE}
+git clone https://github.com/greenplum-db/gpdb.git ${WORKSPACE}
+
+cd ${WORKSPACE}
+git reset --hard ${COMMIT_SHA}
+git rev-parse HEAD > BUILD_NUMBER
 
 re="^(.*?) (.*?) (.*?)$"
 [[ `${WORKSPACE}/getversion` =~ $re ]] && GP_VERSION="${BASH_REMATCH[1]}" && GP_BUILDNUMBER="${BASH_REMATCH[3]}" 
 
 CC=gcc
 BUILD_VERSION=${GP_VERSION}
-BUILD_NUMBER=${GP_BUILDNUMBER}`date +%Y%m%d%H%M%S`
+BUILD_NUMBER=${GP_BUILDNUMBER}`date +.%Y%m%d%H%M%S`
 GPDB_PACKAGE_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}-CENTOS7-x86_64
 GPDB_VERSION_NAME=apache-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}
 GPDB_VERSION_PATH=/usr/local/${GPDB_VERSION_NAME}
@@ -30,14 +83,63 @@ LD_LIBRARY_PATH=${GPDB_VERSION_PATH}/lib:${WORKSPACE}/lib:$LD_LIBRARY_PATH
 C_INCLUDE_PATH=${GPDB_VERSION_PATH}/include:${WORKSPACE}/include:$C_INCLUDE_PATH
 CPPFLAGS="-I ${GPDB_VERSION_PATH}/include:${WORKSPACE}/include"
 
-# Move to the build directory
-cd "${WORKSPACE}"
-
 # Setup GPDB location
 rm -rf ${GPDB_VERSION_PATH}
 mkdir ${GPDB_VERSION_PATH}
 rm -f ${GPDB_PATH}
 ln -s ${GPDB_VERSION_PATH} ${GPDB_PATH}
+
+# build gpos, gp-xerces, gporca
+if [[ "${ENABLE_ORCA}" -ne "" ]]; then
+  ORCA_BUILD_DIR=/opt/gporcabuild
+  mkdir -p ${ORCA_BUILD_DIR}
+  rm -fr ${ORCA_BUILD_DIR}/gpos
+  rm -fr ${ORCA_BUILD_DIR}/gp-xerces
+  rm -fr ${ORCA_BUILD_DIR}/gporca
+
+  pushd ${ORCA_BUILD_DIR}
+    git clone https://github.com/greenplum-db/gpos
+    git clone https://github.com/greenplum-db/gp-xerces
+    git clone https://github.com/greenplum-db/gporca
+  popd
+
+  pushd ${ORCA_BUILD_DIR}/gpos
+    rm -fr build
+    mkdir build
+    pushd build
+      cmake3 ../
+      make -j4 && make install
+    popd
+  popd
+
+  pushd ${ORCA_BUILD_DIR}/gp-xerces
+    rm -fr build
+    mkdir build
+    pushd build
+      ../configure --prefix=/usr/local/
+      make -j4 && make install
+      make prefix="${GPDB_VERSION_PATH}" install
+    popd
+  popd
+
+  pushd ${ORCA_BUILD_DIR}/gporca
+    rm -fr build.gpdb
+    mkdir build.gpdb
+    pushd build.gpdb
+      cmake3 -D CMAKE_INSTALL_PREFIX="${GPDB_VERSION_PATH}" ../
+      make -j4 && make install
+    popd
+    rm -fr build
+    mkdir build
+    pushd build
+      cmake3 ../
+      make -j4 && make install
+    popd
+  popd
+fi # if [[ "${ENABLE_ORCA}" -ne "" ]]
+
+# Move to the build directory
+cd "${WORKSPACE}"
 
 #Build Conda
 cd ${WORKSPACE}
@@ -46,11 +148,11 @@ if [ "$USE_MINICONDA" = "true" ]; then
   chmod oug+x Miniconda2-latest-Linux-x86_64.sh
   ./Miniconda2-latest-Linux-x86_64.sh -b -f -p ${GPDB_VERSION_PATH}/ext/conda2
   export PYTHONHOME="${GPDB_VERSION_PATH}/ext/conda2"
-  export PYTHONPATH=${GPDB_VERSION_PATH}/lib/python
+  export PYTHONPATH="${GPDB_VERSION_PATH}/lib/python"
   export PATH=$PYTHONHOME/bin:$PATH
 else
   wget https://bootstrap.pypa.io/get-pip.py
-  sudo python get-pip.py
+  python get-pip.py
   rm -f get-pip.py
 fi
 pip install psi
@@ -68,7 +170,7 @@ ldconfig
 
 cd ${WORKSPACE}
 chmod oug+x configure
-./configure --with-openssl --with-ldap --with-libcurl --enable-gpfdist --with-python --enable-mapreduce --prefix="${GPDB_VERSION_PATH}"
+./configure --with-openssl --with-ldap --with-libcurl --enable-gpfdist --with-python --enable-mapreduce ${ENABLE_ORCA} --prefix="${GPDB_VERSION_PATH}"
 make
 make install
 
@@ -99,7 +201,7 @@ tar -czvf /usr/local/${GPDB_PACKAGE_NAME}.tar.gz -C /usr/local ${GPDB_VERSION_NA
 cd ${WORKSPACE}
 for dir in BUILD RPMS SOURCES SPECS SRPMS
 do
- [[ -d $dir ]] && rm -Rf $dir
+  [[ -d $dir ]] && rm -Rf $dir
   mkdir $dir
 done
 
