@@ -13,6 +13,7 @@ The goal of the project is to create daily packages of the Apache Greenplum Data
   - build a tagged version
   - remove 1404 and centos6
   - add centos8
+  
 20160104 Adding ubuntu 1404 (LTS) and 1510 docker builds. Happy New Year
 
 ### Current State# ##
