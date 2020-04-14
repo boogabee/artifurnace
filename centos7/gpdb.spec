@@ -2,20 +2,50 @@
 # RPM spec file for GPDB
 #
 
-%define name            apache-greenplum-db
-%define gpdbname        apache-greenplum-db
+%define name            oss-greenplum-db
+%define gpdbname        oss-greenplum-db
 %define version         %{gpdb_ver}
-%define release         %{gpdb_rel}
+%define release         %{gpdb_rel}%{?dist}
 %define arch            x86_64
-%define prefix          /usr/local
-%define installdir      /usr/local/%{name}-%{version}-%{release}
-%define symlink         /usr/local/%{name}
-%define gpdbtarball     %{gpdbname}-%{version}-%{release}-CENTOS7-%{arch}.tar.gz
+%define prefix          /opt/greenplum
+%define installdir      /opt/greenplum/%{name}-%{version}
+%define symlink         /opt/greenplum/%{name}
+%define gpdbtarball     %{gpdbname}-%{version}-%{release}.%{arch}.tar.gz
 %define __os_install_post %{___build_post}
 
-Requires(pre): shadow-utils
+Requires: shadow-utils
+Requires: apr
+Requires: apr-util
+Requires: bash
+Requires: bzip2
+Requires: curl
+Requires: krb5-devel
+Requires: libcurl
+Requires: libevent
+Requires: libxml2
+Requires: libyaml
+Requires: zlib
+Requires: openldap
+Requires: openssh
+Requires: openssl
+Requires: perl
+Requires: readline
+Requires: rsync
+Requires: sed
+Requires: tar
+Requires: zip
+Requires: net-tools
+Requires: less
+Requires: openssh-clients
+Requires: which
+Requires: iproute
+Requires: openssh-server
+Requires: openssl-libs
+Requires: python2-psutil
+Requires: python-lockfile
+Requires: libzstd
 
-Summary:        Apache Greenplum DB
+Summary:        OSS Greenplum DB
 Name:           %{name}
 Version:        %{version}
 Release:        %{release}
@@ -28,7 +58,7 @@ BuildRoot:      %{_topdir}/temp
 Prefix:         %{prefix}
 
 %description
-Apache Greenplum DB
+OSS Greenplum DB
 
 %prep
 
@@ -41,7 +71,7 @@ fi
 
 if ! id gpadmin >& /dev/null; then
  %{_sbindir}/adduser gpadmin -g gpadmin -d /home/gpadmin
-  echo 'source /usr/local/apache-greenplum-db/greenplum_path.sh' >> /home/gpadmin/.bashrc
+  echo 'source /opt/greenplum/oss-greenplum-db/greenplum_path.sh' >> /home/gpadmin/.bashrc
 fi
 exit 0
 
@@ -53,7 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{prefix}
 tar zxf %{_sourcedir}/%{gpdbtarball} -C $RPM_BUILD_ROOT/%{prefix}
 cd $RPM_BUILD_ROOT%{prefix}
-ln -s %{name}-%{version}-%{release} %{name}
+ln -s %{name}-%{version} %{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -63,7 +93,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755, gpadmin, gpadmin) %{symlink}
 
 %post
-INSTDIR=$RPM_INSTALL_PREFIX0/%{name}-%{version}-%{release}
+INSTDIR=$RPM_INSTALL_PREFIX0/%{name}-%{version}
 # Update GPHOME in greenplum_path.sh
 # Have to use sed to replace it into another file, and then move it back to greenplum_path.sh
 # Made sure that even after this step, rpm -e removes greenplum_path.sh as well

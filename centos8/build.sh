@@ -15,11 +15,11 @@ fi
 eval set -- "$PARSED"
 
 # set defaults for the build
-COMMIT_SHA=          # take the default HEAD
-USE_MINICONDA=false  # don't build with Miniconda by default
-ENABLE_ORCA=         # don't build with Orca support by default
-TAG=                 # don't build from a TAG
-ITERATION=1          # iteration of build
+COMMIT_SHA=                   # take the default HEAD
+USE_MINICONDA=false           # don't build with Miniconda by default
+ENABLE_ORCA="--disable-orca"  # don't build with Orca support by default
+TAG=                          # don't build from a TAG
+ITERATION=1                   # iteration of build
 
 # now enjoy the options in order and nicely split until we see --
 while true; do
@@ -65,8 +65,12 @@ yum -y swap fakesystemd systemd
 
 LAUNCH_DIR=`pwd`
 WORKSPACE=/opt/gpdbbuild
+yum -y install 'dnf-command(config-manager)'
+yum -y config-manager --set-enabled PowerTools
 yum -y install epel-release
-yum -y install gcc make wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2 libxml2-devel libxslt-devel python-devel readline-devel apr-devel openssl-libs openssl-devel zlib-devel cmake3 krb5-devel libkadm5 libzstd-devel perl-ExtUtils-Embed python-pip xerces-c-devel
+dnf -y install python2
+alternatives --set python /usr/bin/python2
+yum -y install gcc make wget tar git rpm-build ncurses-devel bzip2 bison flex openssl-devel libcurl-devel readline-devel bzip2-devel gcc-c++ libyaml-devel libevent-devel openldap-devel libxml2 libxml2-devel libxslt-devel python2-devel readline-devel apr-devel openssl-libs openssl-devel zlib-devel cmake3 krb5-devel libkadm5 libzstd-devel perl-ExtUtils-Embed python2-pip xerces-c-devel
 
 
 rm -rf ${WORKSPACE}
@@ -92,7 +96,7 @@ if [[ "${TAG}" != "" ]]; then
 GP_VERSION=`${WORKSPACE}/getversion --short` 
 BUILD_VERSION=${GP_VERSION}
 BUILD_NUMBER=${ITERATION}
-GPDB_PACKAGE_NAME=oss-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}.el7.x86_64
+GPDB_PACKAGE_NAME=oss-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}.el8.x86_64
 GPDB_VERSION_NAME=oss-greenplum-db-${BUILD_VERSION}
 GPDB_VERSION_PATH=/opt/greenplum/${GPDB_VERSION_NAME}
 else
@@ -101,7 +105,7 @@ re="^(.*?) (.*?) (.*?)$"
 BUILD_VERSION=${GP_VERSION}
 BUILD_VERSION=${BUILD_VERSION//-/.}
 BUILD_NUMBER=${GP_BUILDNUMBER}`date +.%Y%m%d%H%M%S`
-GPDB_PACKAGE_NAME=oss-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}.el7.x86_64
+GPDB_PACKAGE_NAME=oss-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}.el8.x86_64
 GPDB_VERSION_NAME=oss-greenplum-db-${BUILD_VERSION}-${BUILD_NUMBER}
 GPDB_VERSION_PATH=/opt/greenplum/${GPDB_VERSION_NAME}
 fi
@@ -120,7 +124,7 @@ rm -f ${GPDB_PATH}
 ln -s ${GPDB_VERSION_PATH} ${GPDB_PATH}
 
 # build gpos, gp-xerces, gporca
-if [[ "${ENABLE_ORCA}" -ne "" ]]; then
+if [[ "${ENABLE_ORCA}" == "--enable-orca" ]]; then
   ORCA_BUILD_DIR=/opt/gporcabuild
   mkdir -p ${ORCA_BUILD_DIR}
   rm -fr ${ORCA_BUILD_DIR}/gpos
@@ -168,7 +172,7 @@ if [[ "${ENABLE_ORCA}" -ne "" ]]; then
       make -j4 && make install
     popd
   popd
-fi # if [[ "${ENABLE_ORCA}" -ne "" ]]
+fi # if [[ "${ENABLE_ORCA}" == "--enable-orca" ]]
 
 # Move to the build directory
 cd "${WORKSPACE}"
