@@ -3,15 +3,19 @@ Artifurnace
 
 Artifurnace is a project to make building and use of the Apache Greenplum Database codebase easier
 
-###Motivation###
+### Motivation ###
 
 The goal of the project is to create daily packages of the Apache Greenplum Database for use on multiple platforms in tarball, packages and as Docker containers. A secondary goal is to lauch a container and run a test suite against the compiled code.
 
-###Changelog###
+### Changelog ###
 
+20209414 Pushed changes to update to latest GPDB Build
+  - build a tagged version
+  - remove 1404 and centos6
+  - add centos8
 20160104 Adding ubuntu 1404 (LTS) and 1510 docker builds. Happy New Year
 
-###Current State###
+### Current State# ##
 
 Currently work is being done via CentOS Docker containers executing inside of Jenkins and will expand to other platforms ( Ubuntu, SUSE ) once satisfaction is achieved with the current build environment.
 
@@ -30,11 +34,9 @@ The build will then execute a Docker container to build and package the GPDB bin
 
 If the build process finishes it will drop a tarball and rpm in ${WORKSPACE}/centos6/output/ directory
 
-###Notes###
+### Notes ###
 
-Current builds are being rolled out to http://gpdbbins.s3-website-us-east-1.amazonaws.com/ on a daily+ basis
-
-###Contributors###
+### Contributors ###
 
 Scott Kahler 
   - email: scott.kahler@gmail.com 
